@@ -5,7 +5,7 @@ import subprocess, json, os
 app =Tk()
 app.title("YouTube Downloader Plus")
 app.geometry("800x200")
-app.minsize(width=700, height=150)
+app.minsize(width=700, height=160)
 app.maxsize(width=1000, height=2000)
 
 
@@ -48,15 +48,16 @@ if downloads_location=="":
     app.after(100, set_download_location)
 
 
-
 ###functions#######################
 def search():
-    url = url_input.get().split("?si=")[0].split("&list=")[0].replace("https://www.youtube.com/watch?v=", "").replace("https://youtu.be/", "")
-    subprocess.run(["yt-dlp", "-F", website + url], text=True)
+    match(selected_platform.get()):
+        case "Auto Detect(Paste Full URL)":
+            url = url_input.get()
+
+    subprocess.run(["yt-dlp", "-F", url], text=True)
 
 def download():
     if downloads_location!="":
-        url = url_input.get().split("?si=")[0].split("&list=")[0].replace("https://www.youtube.com/watch?v=", "").replace("https://youtu.be/", "")
         format = format_input.get()
         name = name_input.get()
 
@@ -65,13 +66,16 @@ def download():
                 name = name + ".%(ext)s"
             else:
                 print("Custom extension provided. File may not open or work properly.")
-        else:
-            print("No name provided. Title from site will be used.")
 
-        #os.chdir(downloads_location)
-        print("Video will be saved as:", name)
-        subprocess.run(["yt-dlp", "-f", format, *(["-o", name] if name!="" else []), website + url], cwd=downloads_location, shell=True, text=True)
-        #os.chdir(directory)
+        match (selected_platform.get()):
+            case "Auto Detect(Paste Full URL)":
+                url = url_input.get()
+            case "YouTube":
+                url = "https://youtu.be/" + url_input.get()
+            case "Instagram":
+                url = "https://instagram.com/p/" + url_input.get()
+        
+        subprocess.run(["yt-dlp", "-f", format, *(["-o", name] if name!="" else []), url], cwd=downloads_location, shell=True, text=True)
     else:
         print("Set a downlaods location first!")
 
@@ -79,13 +83,17 @@ def download():
 
 
 ###elements#######################
-website = 'https://www.youtube.com/watch?v='
+platforms = ["Auto Detect(Paste Full URL)" ,"YouTube", "Instagram"]
+selected_platform = StringVar(app)
+selected_platform.set(platforms[0])
 
 frame1 = Frame(app)
 frame1.pack(side=LEFT, fill=Y, expand=True)
 subframe1 = Frame(frame1)
 subframe1.pack(side=LEFT, expand=True)
-url_input_label = Label(subframe1, text="Video URL/UID:").pack()
+platform_label = Label(subframe1, text="Platform:").pack()
+platform = OptionMenu(subframe1, selected_platform, *platforms); platform.pack()
+url_input_label = Label(subframe1, text="Video ID:").pack()
 url_input = Entry(subframe1); url_input.pack()
 search_button = Button(subframe1, text="Search", command=search).pack(padx=10, pady=10)
 
