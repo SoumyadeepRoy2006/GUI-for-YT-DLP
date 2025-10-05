@@ -53,6 +53,10 @@ def search():
     match(selected_platform.get()):
         case "Auto Detect(Paste Full URL)":
             url = url_input.get()
+        case "YouTube":
+            url = "https://youtu.be/" + url_input.get()
+        case "Instagram":
+            url = "https://instagram.com/p/" + url_input.get()
 
     subprocess.run(["yt-dlp", "-F", url], text=True)
 
